@@ -76,15 +76,14 @@ public static void Run(CloudBlockBlob inputBlob, string fileName, string fileExt
             new StorageCredentials(_storageAccountName, _storageAccountKey);
 
         IAsset newAsset = CreateAssetFromBlob(inputBlob, fileName, log).GetAwaiter().GetResult();
-        
         // Step 2: Create an Encoding Job
 
         // Declare a new encoding job with the Standard encoder
-        IJob job = _context.Jobs.Create("Function - Encode blob single input");
+        IJob job = _context.Jobs.Create("SubTwitr Indexing Job");
 
         // Get a media processor reference, and pass to it the name of the 
         // processor to use for the specific task.
-        IMediaProcessor processor = GetLatestMediaProcessorByName("Media Encoder Standard");
+        IMediaProcessor indexer = GetLatestMediaProcessorByName("Azure Media Indexer");
 
         // Read in custom preset string
         string homePath = Environment.GetEnvironmentVariable("HOME", EnvironmentVariableTarget.Process);
@@ -92,17 +91,17 @@ public static void Run(CloudBlockBlob inputBlob, string fileName, string fileExt
         string presetPath;
         
         if (homePath == String.Empty){
-            presetPath = @"../presets/singleMP4.json"; 
+            presetPath = @"../presets/default.config"; 
         }else{
-            presetPath =  Path.Combine(homePath, @"site\repository\100-basic-encoding\presets\singleMP4.json");
+            presetPath =  Path.Combine(homePath, @"site\repository\100-basic-encoding\presets\default.config");
         }
 
         string preset = File.ReadAllText(presetPath);
 
         // Create a task with the encoding details, using a custom preset
-        ITask task = job.Tasks.AddNew("Encode with Custom Preset",
-            processor,
-            preset,
+        ITask task = job.Tasks.AddNew("Indexing Task",
+            indexer,
+            configuration,
             TaskOptions.None); 
 
         // Specify the input asset to be encoded.
@@ -161,9 +160,9 @@ public static void Run(CloudBlockBlob inputBlob, string fileName, string fileExt
 
         CloudBlockBlob jobOutput = null;
 
-            // Get only the single MP4 output file. 
+            // Get only the transcribed output file. 
             var blobs = outContainer.ListBlobs().OfType<CloudBlob>()
-                        .Where(b=>b.Name.ToLower().EndsWith(".mp4"));
+                        .Where(b=>b.Name.ToLower().EndsWith(".vtt"));
 
 
         foreach (var blob in blobs)
@@ -181,7 +180,7 @@ public static void Run(CloudBlockBlob inputBlob, string fileName, string fileExt
 
         // Change some settings on the output blob.
         outputBlob.Metadata["Custom1"] = "Some Custom Metadata";
-        outputBlob.Properties.ContentType = "video/mp4";
+        outputBlob.Properties.ContentType = "text/vtt";
         outputBlob.SetProperties();
 
         log.Info("Done!");
