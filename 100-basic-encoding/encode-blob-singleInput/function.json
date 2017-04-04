@@ -5,14 +5,14 @@
       "type": "blobTrigger",
       "direction": "in",
       "path": "input/{fileName}.{fileExtension}",
-      "connection": "storageef2vlcpjrkune"
+      "connection": "StorageConnection"
     },
     {
       "name": "outputBlob",
       "type": "blob",
       "direction": "InOut",
       "path": "output/{fileName}-Output.vtt",
-      "connection": "storageef2vlcpjrkune"
+      "connection": "StorageConnection"
     }
   ],
   "disabled": true
