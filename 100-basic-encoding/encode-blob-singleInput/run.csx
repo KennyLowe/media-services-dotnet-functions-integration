@@ -101,7 +101,7 @@ public static void Run(CloudBlockBlob inputBlob, string fileName, string fileExt
         // Create a task with the encoding details, using a custom preset
         ITask task = job.Tasks.AddNew("Indexing Task",
             indexer,
-            configuration,
+            preset,
             TaskOptions.None); 
 
         // Specify the input asset to be encoded.
