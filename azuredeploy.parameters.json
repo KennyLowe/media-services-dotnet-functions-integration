@@ -9,13 +9,16 @@
             "value" : "GEN-UNIQUE"
         },
         "sourceCodeRepositoryURL": {
-            "value": "ENTER PATH TO YOUR FORK OF - https://github.com/Azure-Samples/media-services-dotnet-functions-integration"
+            "value": "https://github.com/KennyLowe/media-services-dotnet-functions-integration"
         },
         "sourceCodeBranch": {
             "value": "master"
         },
         "sourceCodeManualIntegration": {
             "value": true
+        },
+        "functionsAppName": {
+            "value": "subTwitr"
         }
     }
 }

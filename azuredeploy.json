@@ -31,10 +31,10 @@
     },
     "sourceCodeRepositoryURL": {
       "type": "string",
-      "defaultValue": "ENTER PATH to YOUR FORK of https://github.com/Azure-Samples/media-services-dotnet-functions-integration",
-      "metadata": {
-        "description": "Source code repository URL. Is is REQUIRED that you first fork the samples repository and point this to your fork. If you are using your own fork, you may see an error in deployment related to GitHub auth. We require this for your own good, as we may update and break your application or testing as we deploy new updates to the public samples repository."
-      }
+      "defaultValue": "https://github.com/KennyLowe/media-services-dotnet-functions-integration",
+			"metadata": {
+				"description": "Source code repository URL. Is is REQUIRED that you first fork the samples repository and point this to your fork. If you are using your own fork, you may see an error in deployment related to GitHub auth. We require this for your own good, as we may update and break your application or testing as we deploy new updates to the public samples repository."
+			}
     },
     "sourceCodeBranch": {
       "type": "string",
@@ -47,7 +47,6 @@
   "variables": {
     "lowerFunctionsAppName": "[toLower(parameters('functionsAppName'))]",
     "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-    "mediaServiceName": "[concat('media',uniqueString(resourceGroup().id))]",
     "storageAccountName": "[concat('storage',uniqueString(resourceGroup().id))]",
     "hostingPlanName": "[concat(variables('lowerFunctionsAppName'),concat('plan', uniqueString(resourceGroup().id)))]"
   },
@@ -83,30 +82,12 @@
       }
     },
     {
-      "type": "Microsoft.Media/mediaServices",
-      "name": "[variables('mediaServiceName')]",
-      "apiVersion": "2015-10-01",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
-      ],
-      "properties": {
-        "storageAccounts": [
-          {
-            "id": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-            "isPrimary": true
-          }
-        ]
-      }
-    },
-    {
       "type": "Microsoft.Web/sites",
       "name": "[variables('lowerFunctionsAppName')]",
       "apiVersion": "2015-08-01",
       "location": "[resourceGroup().location]",
       "comments": "This function app depends on the media services account and storage account and will pull down the source code from Github",
       "dependsOn": [
-        "[resourceId('Microsoft.Media/mediaservices', variables('mediaServiceName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
         "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
       ],
@@ -156,10 +137,6 @@
             "WEBSITE_CONTENTSHARE": "[toLower(variables('lowerFunctionsAppName'))]",
             "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]",
             "AzureWebJobsDashboard": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]",
-            "AMSAccount": "[variables('mediaServiceName')]",
-            "AMSKey": "[listKeys(variables('mediaServiceName'),'2015-10-01').primaryKey]",
-            "MediaServicesStorageAccountName": "[variables('storageAccountName')]",
-            "MediaServicesStorageAccountKey": "[listKeys(variables('storageAccountid'),'2015-05-01-preview').key1]",
             "StorageConnection": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]",
             "SigningKey": "wOlDEUJ4/VN1No8HxVxpsRvej0DZrO5DXvImGLjFhfctPGFiMkUA0Cj8HSfJW7lePX9XsfHAMhw30p0yYqG+1A==",
             "WebHookEndpoint": "[concat(resourceId('Microsoft.Web/sites', variables('lowerFunctionsAppName')),'/api/Notification_Webhook_Function?code=', parameters('functionKey'))]"
